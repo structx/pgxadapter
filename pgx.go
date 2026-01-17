@@ -15,6 +15,38 @@ var _ Row = (*pgxRow)(nil)
 var _ Rows = (*pgxRows)(nil)
 var _ Tx = (*pgxTx)(nil)
 var _ DB = (*dbtx)(nil)
+var _ DBTX = (*pgxConn)(nil)
+
+type pgxConn struct {
+	c *pgxpool.Conn
+}
+
+// Exec implements [DBTX].
+func (p *pgxConn) Exec(ctx context.Context, stmt string, args ...interface{}) (Result, error) {
+	result, err := p.c.Exec(ctx, stmt, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &pgxResult{result}, nil
+}
+
+// Query implements [DBTX].
+func (p *pgxConn) Query(ctx context.Context, stmt string, args ...interface{}) (Rows, error) {
+	rows, err := p.c.Query(ctx, stmt, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &pgxRows{
+		r:    rows,
+		once: sync.Once{},
+	}, nil
+}
+
+// QueryRow implements [DBTX].
+func (p *pgxConn) QueryRow(ctx context.Context, stmt string, args ...interface{}) Row {
+	row := p.c.QueryRow(ctx, stmt, args...)
+	return &pgxRow{row}
+}
 
 type pgxResult struct {
 	c pgconn.CommandTag
@@ -113,6 +145,15 @@ func (p *pgxTx) Rollback(ctx context.Context) error {
 type dbtx struct {
 	p    *pgxpool.Pool
 	once sync.Once
+}
+
+// Acquire implements [DB].
+func (d *dbtx) Acquire(ctx context.Context) (DBTX, error) {
+	conn, err := d.p.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &pgxConn{conn}, nil
 }
 
 // Begin implements [DB].

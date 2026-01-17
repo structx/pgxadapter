@@ -41,6 +41,8 @@ type Row interface {
 type DB interface {
 	DBTX
 
+	Acquire(context.Context) (DBTX, error)
+
 	Begin(context.Context) (Tx, error)
 	Ping(context.Context) error
 
