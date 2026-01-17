@@ -4,47 +4,50 @@ import (
 	"context"
 )
 
-// DBTX
-type DBTX interface {
-	Exec(context.Context, string, ...interface{}) (Result, error)
-	QueryRow(context.Context, string, ...interface{}) Row
-	Query(context.Context, string, ...interface{}) (Rows, error)
-}
+type (
 
-// Tx
-type Tx interface {
-	DBTX
+	// DBTX connection and transaction wrapper
+	DBTX interface {
+		Exec(context.Context, string, ...interface{}) (Result, error)
+		QueryRow(context.Context, string, ...interface{}) Row
+		Query(context.Context, string, ...interface{}) (Rows, error)
+	}
 
-	Commit(context.Context) error
-	Rollback(context.Context) error
-}
+	// Tx
+	Tx interface {
+		DBTX
 
-// Result
-type Result interface {
-	RowsAffected() int64
-}
+		Commit(context.Context) error
+		Rollback(context.Context) error
+	}
 
-// Rows
-type Rows interface {
-	Next() bool
-	Scan(...any) error
-	Close()
-	Err() error
-}
+	// Result
+	Result interface {
+		RowsAffected() int64
+	}
 
-// Row
-type Row interface {
-	Scan(...any) error
-}
+	// Rows
+	Rows interface {
+		Next() bool
+		Scan(...any) error
+		Close()
+		Err() error
+	}
 
-// DB
-type DB interface {
-	DBTX
+	// Row
+	Row interface {
+		Scan(...any) error
+	}
 
-	Acquire(context.Context) (DBTX, error)
+	// DB
+	DB interface {
+		DBTX
 
-	Begin(context.Context) (Tx, error)
-	Ping(context.Context) error
+		Acquire(context.Context) (DBTX, error)
 
-	Close(context.Context) error
-}
+		Begin(context.Context) (Tx, error)
+		Ping(context.Context) error
+
+		Close(context.Context) error
+	}
+)
