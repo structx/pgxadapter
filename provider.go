@@ -3,7 +3,6 @@ package pgxadapter
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -26,8 +25,8 @@ func WithTraceLogger(tracer pgx.QueryTracer) Option {
 	}
 }
 
-// Open
-func New(ctx context.Context, dsn string, opts ...Option) (DB, error) {
+// New
+func New(ctx context.Context, dsn string, opts ...Option) (Conn, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse pool config: %w", err)
@@ -42,5 +41,5 @@ func New(ctx context.Context, dsn string, opts ...Option) (DB, error) {
 		return nil, fmt.Errorf("failed to create db pool: %w", err)
 	}
 
-	return &dbtx{pool, sync.Once{}}, nil
+	return &pgxPool{p: pool}, nil
 }
