@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type (
 	// Conn
 	Conn interface {
-		Exec(context.Context, string, ...interface{}) (Result, error)
+		Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 		QueryRow(context.Context, string, ...interface{}) Row
 		Query(context.Context, string, ...interface{}) (Rows, error)
 	}
@@ -33,7 +34,7 @@ type (
 
 		Ping(context.Context) error
 
-		Exec(context.Context, string, ...interface{}) (Result, error)
+		Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 		QueryRow(context.Context, string, ...interface{}) Row
 		Query(context.Context, string, ...interface{}) (Rows, error)
 

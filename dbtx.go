@@ -55,14 +55,8 @@ func (p *pgxPool) Close(ctx context.Context) error {
 }
 
 // Exec implements [Pool].
-func (p *pgxPool) Exec(ctx context.Context, sql string, args ...interface{}) (Result, error) {
-	result, err := p.p.Exec(ctx, sql, args...)
-	if err != nil {
-		return nil, err
-	}
-	return &pgxResult{
-		c: result,
-	}, nil
+func (p *pgxPool) Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error) {
+	return p.p.Exec(ctx, sql, args...)
 }
 
 // Ping implements [Pool].
@@ -124,12 +118,8 @@ func (p *pgxConn) Ping(ctx context.Context) error {
 }
 
 // Exec implements [DBTX].
-func (p *pgxConn) Exec(ctx context.Context, stmt string, args ...interface{}) (Result, error) {
-	result, err := p.c.Exec(ctx, stmt, args...)
-	if err != nil {
-		return nil, err
-	}
-	return &pgxResult{result}, nil
+func (p *pgxConn) Exec(ctx context.Context, stmt string, args ...interface{}) (pgconn.CommandTag, error) {
+	return p.c.Exec(ctx, stmt, args...)
 }
 
 // Query implements [DBTX].
